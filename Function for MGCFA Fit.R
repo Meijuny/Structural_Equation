@@ -29,3 +29,20 @@ fitStatCompare<-function(ConfiguralFit,MetricFit,ScalarFit,StrictFit,StructuralF
 fitStatCompare(ConfiguralFit = fit_wsConfi_byGender,MetricFit = fit_wsMetric_byGender,
                ScalarFit = fit_wsScalar_byGender,StrictFit = fit_wsStrict_byGender,
                StructuralFit = fit_WSStructure_byGender)
+
+
+##function for putting the Chi-Square difference test results together
+ChiSqDifferenceTest_results<-function(ConfiguralFit,MetricFit,ScalarFit,StrictFit,StructuralFit){
+        ConfiguralVSMetric<-anova(ConfiguralFit,MetricFit)
+        MetricVSScalar<-anova(MetricFit,ScalarFit)
+        ScalarVSStrict<-anova(ScalarFit,StrictFit)
+        StrictVSStructure<-anova(StrictFit,StructuralFit)
+        ChiSqResults<-rbind(ConfiguralVSMetric,MetricVSScalar[2,],ScalarVSStrict[2,],StrictVSStructure[2,])
+        return(ChiSqResults)
+}
+
+ChiSqDifferenceTest_results(ConfiguralFit = fit_wsConfi_byGender,
+                            MetricFit = fit_wsMetric_byGender,
+                            ScalarFit = fit_wsScalar_byGender,
+                            StrictFit = fit_wsStrict_byGender,
+                            StructuralFit = fit_WSStructure_byGender)
