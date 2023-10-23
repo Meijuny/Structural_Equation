@@ -40,8 +40,9 @@ fitStat_confi_byGender<-fitMeasures(fit_wsConfi_byGender,c("AIC","chisq","df","p
                                     output="matrix")
 fitStat_metric_byGender<-fitMeasures(fit_wsMetric_byGender,c("AIC","chisq","df","pvalue","cfi","tli","rmsea"),
                                      output="matrix")
-fitcompare_confVSmetric<-cbind(fitStat_confi_byGender,fitStat_metric_byGender)
-
+fitcompare_confVSmetric<-cbind(round(fitStat_confi_byGender,digits = 3),
+                               round(fitStat_metric_byGender,digits=3))
+anova(fit_wsConfi_byGender,fit_wsMetric_byGender)
 
 ##cfa with scalar invariance
 fit_wsScalar_byGender<-cfa(model = model_ws_byGender, data=ESS4_BE_clean,
@@ -54,6 +55,7 @@ fitStat_scalar_byGender<-fitMeasures(fit_wsScalar_byGender,c("AIC","chisq","df",
                                      output="matrix")
 
 fitcompare_metricVSscalar<-cbind(fitStat_metric_byGender,fitStat_scalar_byGender)
+anova(fit_wsMetric_byGender,fit_wsScalar_byGender)
 
 ##--------------------------------------------------------------
 ##Check the MI, doesn't work!!!
@@ -71,6 +73,7 @@ summary(fit_wsStrict_byGender,standardized=TRUE)
 fitStat_strict_byGender<-fitMeasures(fit_wsStrict_byGender,c("AIC","chisq","df","pvalue","cfi","tli","rmsea"),
                                      output="matrix")
 fitcompare_scalarVSstrict<-cbind(fitStat_scalar_byGender,fitStat_strict_byGender)
+anova(fit_wsScalar_byGender,fit_wsStrict_byGender)
 
 ##cfa with structural invariance (check the heterogeneity between groups)
 fit_WSStructure_byGender<-cfa(model = model_ws_byGender,data=ESS4_BE_clean,
@@ -110,7 +113,10 @@ ChiSqDifferenceTest_results(ConfiguralFit = fit_wsConfi_byGender,
                             StrictFit = fit_wsStrict_byGender_free,
                             StructuralFit = fit_WSStructure_byGender)
 
-
+lavTestLRT(fit_wsConfi_byGender, fit_wsMetric_byGender,fit_wsScalar_byGender,
+           fit_wsStrict_byGender,fit_WSStructure_byGender)
+lavTestLRT(fit_wsConfi_byGender, fit_wsMetric_byGender,fit_wsScalar_byGender,
+           fit_wsStrict_byGender_free)
 
 ###------------------------------------------------------------------------
 ##MGCFA for Egalitarianism:
@@ -169,6 +175,7 @@ TEST_fit_ws_onEgaliIncome<-cfa(model = model_ws_onEgaliIncome,
                           group = "gndr",
                           group.equal=c("loadings","intercepts"))
 summary(TEST_fit_ws_onEgaliIncome, standardized=TRUE)
+anova(fit_ws_onEgaliIncome, TEST_fit_ws_onEgaliIncome)
 ##?????
 
 ##Constrain the path coefficient (regression coefficient)
