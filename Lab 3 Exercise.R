@@ -21,7 +21,7 @@ welfareSup~0
 fit_wsConfigure<-cfa(model = model_wsConfigure, 
                           data = ESS4_BE,
                           group = "gender")
-summary(fit_wsConfigure,standardized=TRUE)
+summary(fit_wsConfigure,fit.measures=TRUE,standardized=TRUE)
 
 ##MEIJUN QUESTION????why we need gvslvol~1, gvslvue~1,gvhlthc~1,
 ##gvslvol~~gvslvol, gvslvue~~gvslvue, gvhlthc~~gvhlthc, welfareSup 
@@ -29,9 +29,16 @@ summary(fit_wsConfigure,standardized=TRUE)
 
 
 ##Q2:Manually specify a configural invariance model where you estimate residual covariances for the manifest indicators
-##MEIJUN question????Now the model is under-identified?? df=-3
+##Now the model is under-identified with df= -6?
 model_wsConfigure_free<-'
 welfareSup=~gvslvol+gvslvue+gvhlthc
+gvslvol~~gvslvol
+gvslvue~~gvslvue
+gvhlthc~~gvhlthc
+gvslvol~1
+gvslvue~1
+gvhlthc~1
+welfareSup~0
 gvslvol~~gvslvue
 gvslvol~~gvhlthc
 gvslvue~~gvhlthc
@@ -40,29 +47,44 @@ gvslvue~~gvhlthc
 fit_wsConfigure_free<-cfa(model = model_wsConfigure_free,
                           data = ESS4_BE,
                           group = "gender")
+summary(fit_wsConfigure_free,fit.measures=TRUE,standardized=TRUE)
 
 
 ##Q3:Manually specify a metric invariance model for male and female
 model_wsMetric<-'
-welfareSup=~gvslvol+gvslvue+gvhlthc
+welfareSup=~c(L1,L1)*gvslvol+c(L2,L2)*gvslvue+c(L3,L3)*gvhlthc
+gvslvol~~gvslvol
+gvslvue~~gvslvue
+gvhlthc~~gvhlthc
+gvslvol~1
+gvslvue~1
+gvhlthc~1
+welfareSup~0
 '
 
 fit_wsMetric<-cfa(model = model_wsMetric,
                   data = ESS4_BE,
                   group = "gender",
                   group.equal=c("loadings"))
-summary(fit_wsMetric,standardized=TRUE)
+summary(fit_wsMetric,fit.measures=TRUE, standardized=TRUE)
 
 ##Q4: Manually specify a scalar invariance model for male and female
 model_wsScalar<-'
-welfareSup=~gvslvol+gvslvue+gvhlthc
+welfareSup=~c(L1,L1)*gvslvol+c(L2,L2)*gvslvue+c(L3,L3)*gvhlthc
+gvslvol~c(I1,I1)*1
+gvslvue~c(I2,I2)*1
+gvhlthc~c(I3,I3)*1
+gvslvol~~gvslvol
+gvslvue~~gvslvue
+gvhlthc~~gvhlthc
+welfareSup~c(0,NA)*0
 '
 
 fit_wsScalar<-cfa(model = model_wsScalar,
                   data = ESS4_BE,
                   group = "gender",
-                  group.equal=c("loadings","intercepts"))
-summary(fit_wsScalar)
+                  group.equal=c("loadings","intercepts")) ##If we manully specify the model, this argument is not needed?
+summary(fit_wsScalar, fit.measures=TRUE,standardized=TRUE)
 
 ##Q5:Explain differences in Degrees of Freedom for all the fitted models
 #Source in function
@@ -88,7 +110,7 @@ fitStatCompare<-function(ConfiguralFit,MetricFit,ScalarFit){
 fitStatCompare(ConfiguralFit = fit_wsConfigure, MetricFit = fit_wsMetric, ScalarFit = fit_wsScalar)
 
 ##metric invariance: we gain 2 df as the female group loadings do not need to be estimated in var-cov structure
-##Scalar invariance: we gain 2 more df as the free parameters for mean structure is: only 4
+##Scalar invariance: we gain 2 more df as the free parameters for mean structure now is: only 4 instead of 6
 
 ##Q6:Add gvcldcr and see if the model reaches scalar invariance
 #gvcldcr configural equivalence:
@@ -131,6 +153,8 @@ fitStatCompare(ConfiguralFit = fit_wsChildcare_Configure,
                ScalarFit = fit_wsChildcare_scalar)
 
 ##source in chi-square difference test:
+lavTestLRT(fit_wsChildcare_Configure,fit_wsChildcare_metric,fit_wsChildcare_scalar)
+
 ChiSqDifferenceTest_results<-function(ConfiguralFit,MetricFit,ScalarFit){
         ConfiguralVSMetric<-anova(ConfiguralFit,MetricFit)
         MetricVSScalar<-anova(MetricFit,ScalarFit)
@@ -158,7 +182,9 @@ fit_partialScalar_wsChildcare<-cfa(model = model_partialScalar_wsChildcare,
                                            group = "gender",
                                            group.equal=c("loadings","intercepts"),
                                            group.partial=c(gvcldcr~1))
-summary(fit_partialScalar_wsChildcare)
+summary(fit_partialScalar_wsChildcare, standardized=TRUE)
+
+lavTestLRT(fit_wsChildcare_Configure,fit_wsChildcare_metric,fit_partialScalar_wsChildcare)
 
 ChiSqDifferenceTest_results(ConfiguralFit = fit_wsChildcare_Configure,
                             MetricFit = fit_wsChildcare_metric,
@@ -197,8 +223,9 @@ Total_income_female:=a23*b2+c23
 
 fit_ws_MultiMediate<-cfa(model = model_ws_MultiMediate,
                          data = ESS4_BE,
-                         group = "gender")
-summary(fit_ws_MultiMediate,standardized=TRUE)
+                         group = "gender",
+                         group.equal=c("loadings"))
+summary(fit_ws_MultiMediate,fit.measures=TRUE,standardized=TRUE)
 
 ##Indirect_edu_male has bigger negative effect than total effect --> suppression???
 ##Indirect_edu_female has different sign than total effect --> suppression???
@@ -217,7 +244,7 @@ MultiMediate_fitStat<-fitMeasures(fit_ws_MultiMediate,c("df","cfi","tli",
 #Both age and Egalitarianism have significant effect on Welfare support
 
 #Female:
-#no indicators have significant effects on Egalitarianism
+#no indicators (except income) have significant effects on Egalitarianism
 #Both age and Egalitarianism have significant effect on Welfare Support
 
 #Q5: Assess if the path from Education to Egalitarianism (Path A) can be set equal across the two groups
@@ -243,8 +270,9 @@ Total_income_female:=a23*b2+c23
 
 fit_ws_MultiMediate_EDUcons<-cfa(model = model_ws_MultiMediate_EDUcons,
                                  data = ESS4_BE,
-                                 group = "gender")
-summary(fit_ws_MultiMediate_EDUcons,standardized=TRUE)
+                                 group = "gender",
+                                 group.equal=c("loadings"))
+summary(fit_ws_MultiMediate_EDUcons,fit.measures=TRUE,standardized=TRUE)
 
 EDUcons_fitStat<-fitMeasures(fit_ws_MultiMediate_EDUcons,
                              c("df","cfi","tli","rmsea","rmsea.ci.upper",
@@ -278,7 +306,8 @@ Total_income_female:=a23*b1+c23
 
 fit_ws_MultiMediate_EDUEgalicons<-cfa(model = model_ws_MultiMediate_EDUEgalicons,
                                       data = ESS4_BE,
-                                      group = "gender")
+                                      group = "gender",
+                                      group.equal=c("loadings"))
 summary(fit_ws_MultiMediate_EDUEgalicons,standardized=TRUE)
 
 anova(fit_ws_MultiMediate_EDUEgalicons,fit_ws_MultiMediate_EDUcons)
@@ -301,7 +330,9 @@ Total_income_diff:=a13*b1+c13-(a23*b2+c23)
 
 fit_difference<-cfa(model = model_differenceBetweenGender,
                     data = ESS4_BE,
-                    group = "gender")
-summary(fit_difference,standardized=TRUE)
+                    group = "gender",
+                    group.equal=c("loadings"))
+
+summary(fit_difference,standardized=TRUE, fit.measures=TRUE)
 
 ##Conclusion: no path coefficients are statistically different between two gender groups
