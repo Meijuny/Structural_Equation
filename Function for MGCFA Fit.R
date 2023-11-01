@@ -1,3 +1,22 @@
+##function to compare only configural, metric and scalar invariance:
+fitStatCompare<-function(ConfiguralFit,MetricFit,ScalarFit){
+        ConfiguralInvariance_Stat<-round(fitMeasures(ConfiguralFit,c("df","cfi","tli",
+                                                                     "rmsea","rmsea.ci.upper","rmsea.ci.lower","rmsea.pvalue",
+                                                                     "srmr"),
+                                                     output="matrix"),digits = 3)
+        MetricInvariance_Stat<-round(fitMeasures(MetricFit,c("df","cfi","tli",
+                                                             "rmsea","rmsea.ci.upper","rmsea.ci.lower","rmsea.pvalue",
+                                                             "srmr"),
+                                                 output="matrix"),digits=3)
+        ScalarInvariance_Stat<-round(fitMeasures(ScalarFit,c("df","cfi","tli",
+                                                             "rmsea","rmsea.ci.upper","rmsea.ci.lower","rmsea.pvalue",
+                                                             "srmr"),
+                                                 output="matrix"),digits = 3)
+        Fit_Compare<-cbind(ConfiguralInvariance_Stat,MetricInvariance_Stat,ScalarInvariance_Stat)
+        colnames(Fit_Compare)<-c("configural","metric","scalar")
+        return(Fit_Compare)
+}
+
 ##Function to view the statistics of different cfa invariance fit altogether
 fitStatCompare<-function(ConfiguralFit,MetricFit,ScalarFit,StrictFit,StructuralFit){
         ConfiguralInvariance_Stat<-round(fitMeasures(ConfiguralFit,c("df","cfi","tli",
